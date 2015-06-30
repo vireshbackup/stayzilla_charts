@@ -8,6 +8,7 @@
     <!--  Scripts  -->
     <script type="text/javascript" src="/d3.js"></script>
     <script type="text/javascript" src="/d3.geo.min.js"></script>
+    <script type="text/javascript" src="/crossfilter.js"></script>
  
     <!--  Styles  -->  
     <link type="text/css" rel="stylesheet" href="/zcolorbrewer.css"/>
@@ -34,6 +35,8 @@
     var path = d3.geo.path().projection(proj);
     var t = proj.translate(); // the projection's default translation
     var s = proj.scale() // the projection's default scale
+
+    console.log(crossfilter([5,5,5,5]))
 
     var map = d3.select("#chart").append("svg:svg")
         .attr("width", w)
@@ -62,18 +65,25 @@
     d3.csv("ltln3.csv", function(csv){
       console.log("lol", csv);
 
-    
+      var filter_data = function(csv){
+
+          all_data = crossfilter(csv);
+          console.log(all_data);
+          var by_amenity = all_data.dimension(function(d){return d["lat"]});
+          console.log(by_amenity, by_amenity.top(Infinity));
+          return csv;
+        }
+
       map.selectAll("circle")
-          .data(csv)
+          .data(filter_data(csv))
           .enter()
           .append("circle")
           .attr("transform", function(d) {
             // console.log(d)
             return "translate(" + proj([d.lng,d.lat]) + ")";})
           .attr("r",2)
-      
 
-  })
+        })
     
    // This section should allow for zoom & pan.
 
