@@ -77,20 +77,21 @@
 		    .addLayer(mapboxTiles)
 		    .setView([21.0000 , 78.0000], 5);
 
-      var tip = d3.tip()
-                  .attr("class", "d3-tip")
-                  .html(function(d){ 
-                  		console.log(d);
-                  		return "<br>hotel Id : "+ d.hid
-                  				+"<br>ATM : "+parseInt(d.atm*1000)+"m"
-                  				+"<br>Bar : "+ parseInt(d.bar*1000)+"m"
-                  				+"<br>Bus Station : "+ parseInt(d.bus_station*1000)+"m"
-                  				+"<br>Restaurents : "+ parseInt(d.food*1000)+"m"
-                  				+"<br>hospital : "+ parseInt(d.hospital*1000)+"m"
-                  				+"<br>Landmarks : "+ parseInt(d.landmarks*1000)+"m"
-                  				+"<br>Movie Theatres : "+ parseInt(d.movie_theatre*1000)+"m"
-                  				+"<br>offices : "+ parseInt(d.offices*1000)+"m"
-                  				+"<br>spa/gyms : "+ parseInt(d.spa_gym*1000)+"m </br>"})
+
+		var tip = d3.tip()
+          .attr("class", "d3-tip")
+          .html(function(d){ 
+          		console.log(d);
+          		return "<br>hotel Id : "+ d.hid
+          				+"<br>ATM : "+parseInt(d.atm*1000)+"m"
+          				+"<br>Bar : "+ parseInt(d.bar*1000)+"m"
+          				+"<br>Bus Station : "+ parseInt(d.bus_station*1000)+"m"
+          				+"<br>Restaurents : "+ parseInt(d.food*1000)+"m"
+          				+"<br>hospital : "+ parseInt(d.hospital*1000)+"m"
+          				+"<br>Landmarks : "+ parseInt(d.landmarks*1000)+"m"
+          				+"<br>Movie Theatres : "+ parseInt(d.movie_theatre*1000)+"m"
+          				+"<br>offices : "+ parseInt(d.offices*1000)+"m"
+          				+"<br>spa/gyms : "+ parseInt(d.spa_gym*1000)+"m </br>"})
 
 
 
@@ -99,7 +100,7 @@
 
 		var svg = d3.select("#map").select("svg"),
     	g = svg.append("g")
-    		.classed({ "hidden": true, "hideLabels": true})
+    		// .classed({ "hidden": true, "hideLabels": true})
 
     	// Pick up SVG from map object
     	d3.csv("data/csv_sample.csv", function(csv){
@@ -109,75 +110,68 @@
 
     		})
 
+    		csv.forEach(function(d){
+    			// console.log(d);
+    			d.LatLng = new L.LatLng(d.lat, d.lng);
+    			// console.log(d);
+
+    		})
+
     		total_hotels = csv.length;
 
     		var ndx = crossfilter(csv);
     		console.log(ndx);
+     		var tierTypeDimension = ndx.dimension(function(d){ return d.tier;});
 
-    		reduceDimension = ndx.dimension(function(d){ return "Reduced";})
-
-    		console.log(reduceDimension.top(Infinity));
-
-    		listingsMap = d3.map(reduceDimension.top(Infinity), function(d){ return d.hid;})
-
-    		reduceGroup = reduceDimension.group().reduce(
-    			function(p, v){
-    				++p.count;
-    				switch(v.tier){
-    					case 1:
-    						++p.tier1_count;
-    						break;
-    					case 2:
-    						++p.tier2_count;
-    						break;
-    					case 3:
-    						++p.tier3_count;
-    						break;
-    				}
-    				return p;
-    			},
-
-    			function(p,v){
-    				--p.count;
-    				switch(v.tier){
-    					case 1:
-    						--p.tier1_count;
-    						break;
-    					case 2:
-    						--p.tier2_count;
-    						break;
-    					case 3:
-    						--p.tier3_count;
-    						break;
-    				}
-    				return p;
-    			},
-
-    			/*Initialize p*/
-
-    			function(){
-    				return{
-    					count:0,
-    					tier1_count:0,
-    					tier2_count:0,
-    					tier3_count:0
-    				}
-    			}
-
-    		)
-
-    		var bounds = [];
-            reduceDimension.top(Infinity).forEach(function (d) {
-                bounds.push(d.LatLng);
-            });
-
-            console.log(bounds)
-
-    		var tierTypeDimension = ndx.dimension(function(d){ return d.tier;});
     		var tierTypeGroup = tierTypeDimension.group();
 
     		//For filtering based on tier based
     		tierTypeFilterDimension = ndx.dimension(function(d){ return d.tier;})
+
+		function hotelPoints(){
+
+		    	var feature = g.selectAll("circle")
+								.data(tierTypeDimension.top(Infinity))
+								.enter()
+								.append("circle")
+								.style("fill", function(d,i){
+									// console.log(d, d.tier);
+										switch(d.tier){
+											case 1:
+												return "#7323DC";
+												break;
+											case 2:
+												return "#FF7B10";
+												break;
+											case 3:
+												return "#E5006C";
+												break;
+											default:
+		                            			return "red";
+										}
+								})
+								.attr("r", 2)
+								.on("mouseover", function(d){return tip.show(d);})
+								.on("mouseout", tip.hide)
+								.call(tip)
+								
+				map.on("viewreset", update);
+				update();
+
+				function update() {
+					feature.attr("transform", 
+						function(d){
+							// console.log(d, map.latLngToLayerPoint(d.LatLng).x);
+							return "translate(" + 
+								map.latLngToLayerPoint(d.LatLng).x + "," + 
+								map.latLngToLayerPoint(d.LatLng).y + ")";
+						})
+				}
+		    }
+
+    		reduceDimension = ndx.dimension(function(d){ return "Reduced";})
+
+    		console.log(reduceDimension.top(Infinity));
 
     		tierTypeChart = dc.rowChart("#tierTypeRowChart");
     		tierTypeChart
@@ -188,74 +182,26 @@
 	            .colors(d3.scale.ordinal().domain(["tier1","tier2", "tier3"])
 	                                    .range(["#7323DC","#FF7B10", "#E5006C"]))
 	            .title(function(d) {
-	            	console.log(d);
+	            	// console.log(d);
 	             return "tier "+d.key+" :"+d.value; })
 	            .elasticX(true)
 	            .margins({top: 0, right: 10, bottom: 35, left: 5})
 	            .gap(20)
 	            .labelOffsetY(-3)
-	            .labelOffsetX(1) 
-	            // .on("filtered", filtered);
+	            .labelOffsetX(1)
+	            .on("filtered", function(d,i){
+	            	// tierTypeDimension.filterAll();
+	            	console.log("in");
+	            	tierTypeDimension.filter(i);
+	            	dc.redrawAll();
+
+	            	console.log(d,i);
+	            	hotelPoints();
+	            	tierTypeDimension.filterAll();
+	            })
 
         tierTypeChart.xAxis().ticks(2);
-
-        
         dc.renderAll();
-        // dc.renderAll('group');
-
-        // dc.redrawAll();
-
-        // dc.redrawAll('group');
-
-        	// reduceDimension.top(Infinity);
-
-
-    		csv.forEach(function(d){
-    			// console.log(d);
-    			d.LatLng = new L.LatLng(d.lat, d.lng);
-    			// console.log(d);
-
-    		})
-
-    		var feature = g.selectAll("circle")
-    						.data(reduceDimension.top(Infinity))
-    						.enter()
-    						.append("circle")
-    						.style("fill", function(d,i){
-    							console.log(d, d.tier);
-    								switch(d.tier){
-    									case 1:
-    										return "#7323DC";
-    										break;
-    									case 2:
-    										return "#FF7B10";
-    										break;
-    									case 3:
-    										return "#E5006C";
-    										break;
-    									default:
-                                			return "red";
-    								}
-    						})
-    						.attr("r", 2)
-    						.on("mouseover", function(d){return tip.show(d);})
-    						.on("mouseout", tip.hide)
-    						.call(tip)
-
-
-    						
-    		map.on("viewreset", update);
-    		update();
-
-    		function update() {
-    			feature.attr("transform", 
-    				function(d){
-    					// console.log(d, map.latLngToLayerPoint(d.LatLng).x);
-    					return "translate(" + 
-    						map.latLngToLayerPoint(d.LatLng).x + "," + 
-    						map.latLngToLayerPoint(d.LatLng).y + ")";
-    				})
-    		}
     	})
 
 		</script>
