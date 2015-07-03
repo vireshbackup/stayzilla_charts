@@ -7,6 +7,8 @@
 		<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 		<script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
 		<link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.css' rel='stylesheet' />
+
+		<link href="/css/dc.css" rel='stylesheet' />
 		
 		<script type="text/javascript"  src="/lib/d3.js"></script>
 		<script type="text/javascript" src="/lib/crossfilter.js"></script>
@@ -47,6 +49,9 @@
 			  margin: -1px 0 0 0;
 			  top: 100%;
 			  left: 0;
+			}
+			#tierTypeRowChart {
+				float:right;
 			}
 		</style>
 	</head>
@@ -161,23 +166,30 @@
 
     		)
 
+    		var bounds = [];
+            reduceDimension.top(Infinity).forEach(function (d) {
+                bounds.push(d.LatLng);
+            });
+
+            console.log(bounds)
+
     		var tierTypeDimension = ndx.dimension(function(d){ return d.tier;});
     		var tierTypeGroup = tierTypeDimension.group();
 
     		//For filtering based on tier based
     		tierTypeFilterDimension = ndx.dimension(function(d){ return d.tier;})
 
-    		tierTypeChart = dc.rowChart("#tierTypeRowChart", "automaticRedrawGroup");
+    		tierTypeChart = dc.rowChart("#tierTypeRowChart");
     		tierTypeChart
     			.width(100)
     			.height(200)
     			.dimension(tierTypeDimension)
     			.group(tierTypeGroup)
 	            .colors(d3.scale.ordinal().domain(["tier1","tier2", "tier3"])
-	                                    .range(["#ec5242","#3fb211", "#00bff3"]))
+	                                    .range(["#7323DC","#FF7B10", "#E5006C"]))
 	            .title(function(d) {
 	            	console.log(d);
-	             return d.key + ": " + formatThousands(d.value) + " (" + formatPercent(d.value / d3.sum(tierTypeGroup.all(), function(d){ return d.value; })) + ")"; })
+	             return "tier "+d.key+" :"+d.value; })
 	            .elasticX(true)
 	            .margins({top: 0, right: 10, bottom: 35, left: 5})
 	            .gap(20)
@@ -187,7 +199,15 @@
 
         tierTypeChart.xAxis().ticks(2);
 
+        
+        dc.renderAll();
+        // dc.renderAll('group');
 
+        // dc.redrawAll();
+
+        // dc.redrawAll('group');
+
+        	// reduceDimension.top(Infinity);
 
 
     		csv.forEach(function(d){
@@ -198,10 +218,25 @@
     		})
 
     		var feature = g.selectAll("circle")
-    						.data(csv)
+    						.data(reduceDimension.top(Infinity))
     						.enter()
     						.append("circle")
-    						.style("fill", "#ED0974")
+    						.style("fill", function(d,i){
+    							console.log(d, d.tier);
+    								switch(d.tier){
+    									case 1:
+    										return "#7323DC";
+    										break;
+    									case 2:
+    										return "#FF7B10";
+    										break;
+    									case 3:
+    										return "#E5006C";
+    										break;
+    									default:
+                                			return "red";
+    								}
+    						})
     						.attr("r", 2)
     						.on("mouseover", function(d){return tip.show(d);})
     						.on("mouseout", tip.hide)
