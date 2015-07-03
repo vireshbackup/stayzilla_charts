@@ -8,9 +8,9 @@
 		<script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
 		<link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.css' rel='stylesheet' />
 		
-		<script type="text/javascript"  src="d3.js"></script>
-		<script type="text/javascript" src="crossfilter.js"></script>
-		<script type="text/javascript" src="d3.tip.v0.6.3.js"></script>
+		<script type="text/javascript"  src="/lib/d3.js"></script>
+		<script type="text/javascript" src="/lib/crossfilter.js"></script>
+		<script type="text/javascript" src="/lib/d3.tip.v0.6.3.js"></script>
 		<script type="text/javascript" src="/lib/dc.js"></script>
 
 		<style>
@@ -97,7 +97,7 @@
     		.classed({ "hidden": true, "hideLabels": true})
 
     	// Pick up SVG from map object
-    	d3.csv("csv_sample.csv", function(csv){
+    	d3.csv("data/csv_sample.csv", function(csv){
 
     		csv.forEach(function(d){
     			d.tier = +d.tier;
