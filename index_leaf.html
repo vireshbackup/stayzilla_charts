@@ -10,15 +10,51 @@
 		
 		<script type="text/javascript"  src="d3.js"></script>
 		<script type="text/javascript" src="crossfilter.js"></script>
+		<script type="text/javascript" src="d3.tip.v0.6.3.js"></script>
+		<script type="text/javascript" src="/lib/dc.js"></script>
 
 		<style>
+		.leaflet-container {
+			    background: "red";
+			}
 		  body { margin:0; padding:0; }
 		  #map { position:absolute; top:0; bottom:0; width:60%; }
+		  .d3-tip {
+			  line-height: 1;
+			  font-weight: bold;
+			  padding: 12px;
+			  background: #FCFEFF;
+			  color: #C6E5F6;
+			  border-radius: 2px;
+			  font-family: muliregular;
+			  line-height: 20px;
+			  opacity: 8;
+			}
+
+			.d3-tip:after {
+			  box-sizing: border-box;
+			  display: inline;
+			  font-size: 10px;
+			  width: 100%;
+			  line-height: 1;
+			  color: rgba(0, 0, 0, 0.8);
+			  content: "\25BC";
+			  position: absolute;
+			  text-align: center;
+			}
+
+			.d3-tip.n:after {
+			  margin: -1px 0 0 0;
+			  top: 100%;
+			  left: 0;
+			}
 		</style>
 	</head>
 	<body>
 
 		<div id='map'></div>
+
+		<div id="tierTypeRowChart"></div>
 
 		<script>
 
@@ -30,23 +66,134 @@
 		});
 
 
+
+
 		var map = L.map('map')
 		    .addLayer(mapboxTiles)
 		    .setView([21.0000 , 78.0000], 5);
-		
+
+      var tip = d3.tip()
+                  .attr("class", "d3-tip")
+                  .html(function(d){ 
+                  		console.log(d);
+                  		return "<br>hotel Id : "+ d.hid
+                  				+"<br>ATM : "+parseInt(d.atm*1000)+"m"
+                  				+"<br>Bar : "+ parseInt(d.bar*1000)+"m"
+                  				+"<br>Bus Station : "+ parseInt(d.bus_station*1000)+"m"
+                  				+"<br>Restaurents : "+ parseInt(d.food*1000)+"m"
+                  				+"<br>hospital : "+ parseInt(d.hospital*1000)+"m"
+                  				+"<br>Landmarks : "+ parseInt(d.landmarks*1000)+"m"
+                  				+"<br>Movie Theatres : "+ parseInt(d.movie_theatre*1000)+"m"
+                  				+"<br>offices : "+ parseInt(d.offices*1000)+"m"
+                  				+"<br>spa/gyms : "+ parseInt(d.spa_gym*1000)+"m </br>"})
+
+
+
 		//Initialize svg layer 
     	map._initPathRoot()
 
 		var svg = d3.select("#map").select("svg"),
     	g = svg.append("g")
+    		.classed({ "hidden": true, "hideLabels": true})
 
     	// Pick up SVG from map object
-    	d3.csv("ltln3.csv", function(csv){
+    	d3.csv("csv_sample.csv", function(csv){
 
     		csv.forEach(function(d){
-    			console.log(d);
+    			d.tier = +d.tier;
+
+    		})
+
+    		total_hotels = csv.length;
+
+    		var ndx = crossfilter(csv);
+    		console.log(ndx);
+
+    		reduceDimension = ndx.dimension(function(d){ return "Reduced";})
+
+    		console.log(reduceDimension.top(Infinity));
+
+    		listingsMap = d3.map(reduceDimension.top(Infinity), function(d){ return d.hid;})
+
+    		reduceGroup = reduceDimension.group().reduce(
+    			function(p, v){
+    				++p.count;
+    				switch(v.tier){
+    					case 1:
+    						++p.tier1_count;
+    						break;
+    					case 2:
+    						++p.tier2_count;
+    						break;
+    					case 3:
+    						++p.tier3_count;
+    						break;
+    				}
+    				return p;
+    			},
+
+    			function(p,v){
+    				--p.count;
+    				switch(v.tier){
+    					case 1:
+    						--p.tier1_count;
+    						break;
+    					case 2:
+    						--p.tier2_count;
+    						break;
+    					case 3:
+    						--p.tier3_count;
+    						break;
+    				}
+    				return p;
+    			},
+
+    			/*Initialize p*/
+
+    			function(){
+    				return{
+    					count:0,
+    					tier1_count:0,
+    					tier2_count:0,
+    					tier3_count:0
+    				}
+    			}
+
+    		)
+
+    		var tierTypeDimension = ndx.dimension(function(d){ return d.tier;});
+    		var tierTypeGroup = tierTypeDimension.group();
+
+    		//For filtering based on tier based
+    		tierTypeFilterDimension = ndx.dimension(function(d){ return d.tier;})
+
+    		tierTypeChart = dc.rowChart("#tierTypeRowChart", "automaticRedrawGroup");
+    		tierTypeChart
+    			.width(100)
+    			.height(200)
+    			.dimension(tierTypeDimension)
+    			.group(tierTypeGroup)
+	            .colors(d3.scale.ordinal().domain(["tier1","tier2", "tier3"])
+	                                    .range(["#ec5242","#3fb211", "#00bff3"]))
+	            .title(function(d) {
+	            	console.log(d);
+	             return d.key + ": " + formatThousands(d.value) + " (" + formatPercent(d.value / d3.sum(tierTypeGroup.all(), function(d){ return d.value; })) + ")"; })
+	            .elasticX(true)
+	            .margins({top: 0, right: 10, bottom: 35, left: 5})
+	            .gap(20)
+	            .labelOffsetY(-3)
+	            .labelOffsetX(1) 
+	            // .on("filtered", filtered);
+
+        tierTypeChart.xAxis().ticks(2);
+
+
+
+
+    		csv.forEach(function(d){
+    			// console.log(d);
     			d.LatLng = new L.LatLng(d.lat, d.lng);
-    			console.log(d);
+    			// console.log(d);
 
     		})
 
@@ -56,6 +203,11 @@
     						.append("circle")
     						.style("fill", "#ED0974")
     						.attr("r", 2)
+    						.on("mouseover", function(d){return tip.show(d);})
+    						.on("mouseout", tip.hide)
+    						.call(tip)
+
+
     						
     		map.on("viewreset", update);
     		update();
