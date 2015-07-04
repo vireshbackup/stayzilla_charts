@@ -132,7 +132,8 @@
 
 		    	var feature = g.selectAll("circle")
 								.data(tierTypeFilterDimension.top(Infinity))
-								.enter()
+
+						feature.enter()
 								.append("circle")
 								.style("fill", function(d,i){
 									// console.log(d, d.tier);
@@ -154,6 +155,26 @@
 								// .on("mouseover", function(d){return tip.show(d);})
 								// .on("mouseout", tip.hide)
 								// .call(tip)
+						feature.style("fill", function(d,i){
+									// console.log(d, d.tier);
+										switch(d.tier){
+											case 1:
+												return "#7323DC";
+												break;
+											case 2:
+												return "#FF7B10";
+												break;
+											case 3:
+												return "#E5006C";
+												break;
+											default:
+		                            			return "red";
+										}
+								})
+								.attr("r", 2)
+						feature.exit().remove();
+
+
 								
 				map.on("viewreset", update);
 				update();
@@ -192,20 +213,23 @@
 	            .on("filtered", function(d,i){
 	            	// tierTypeFilterDimension.filterAll();
 	            	console.log(d,i);
-	            	console.log("in");
+	            	console.log(tierTypeChart.hasFilter(i));
 	            	// tierTypeDimension.filterAll();
-	            	if(tierTypeFilterDimension.filter(i)){
+	            	if(tierTypeChart.hasFilter(i)){
+	            		console.log(tierTypeChart.hasFilter(i));
 
 	            		tierTypeFilterDimension.filterAll();
+	            		// tierTypeDimension.filter(i);
+	            		// tierTypeDimension.filter((i+2)%3)
 	            	}
 	            	else{
-	            		tierTypeFilterDimension.filter(i);
+	            		// tierTypeDimension.filterAll();
+	            		tierTypeDimension.filter(i);
 	            	}
 	            	// tierTypeGroup = tierTypeDimension.group();
 	            	console.log(d,i);
 	            	hotelPoints();
 	            	dc.redrawAll();
-	            	
 	            })
 
         tierTypeChart.xAxis().ticks(4);
