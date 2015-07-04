@@ -52,6 +52,7 @@
 			}
 			#tierTypeRowChart {
 				float:right;
+				margin: 200px;
 			}
 		</style>
 	</head>
@@ -196,38 +197,44 @@
 
     		tierTypeChart = dc.rowChart("#tierTypeRowChart");
     		tierTypeChart
-    			.width(400)
-    			.height(400)
+    			.width(200)
+    			.height(200)
     			.dimension(tierTypeDimension)
     			.group(tierTypeGroup)
 	            .colors(d3.scale.ordinal().domain(["tier1","tier2", "tier3"])
 	                                    .range(["#7323DC","#FF7B10", "#E5006C"]))
 	            .title(function(d) {
 	            	// console.log(d);
-	             return "tier "+d.key+" :"+d.value; })
+	             return "tier "+d.key+" has "+d.value+" hotels"; })
 	            .elasticX(true)
-	            .margins({top: 0, right: 10, bottom: 35, left: 5})
+	            .margins({top: 0, right: 10, bottom: 35, left: 20})
 	            .gap(20)
 	            .labelOffsetY(-3)
 	            .labelOffsetX(1)
+	            .on('postRender', function(chart) {
+						   tierTypeChart.svg().append('text').attr('class', 'y-label').attr('text-anchor', 'middle')
+						      .attr('x', -100).attr('y', 40).attr('dy', '-25').attr('transform', 'rotate(-90)')
+						      .text('tier');
+						   //different for x-axis label
+						})
 	            .on("filtered", function(d,i){
 	            	// tierTypeFilterDimension.filterAll();
-	            	console.log(d,i);
+	            	// console.log(d,i);
 	            	console.log(tierTypeChart.hasFilter(i));
+	            	console.log(tierTypeChart.hasFilter((i+1)%2));
+	            	console.log(tierTypeChart.hasFilter((i+2)%3));
 	            	// tierTypeDimension.filterAll();
 	            	if(tierTypeChart.hasFilter(i)){
-	            		console.log(tierTypeChart.hasFilter(i));
 
-	            		tierTypeFilterDimension.filterAll();
-	            		// tierTypeDimension.filter(i);
-	            		// tierTypeDimension.filter((i+2)%3)
 	            	}
 	            	else{
 	            		// tierTypeDimension.filterAll();
-	            		tierTypeDimension.filter(i);
+	            		
+	            		tierTypeFilterDimension.filterAll();
+
 	            	}
 	            	// tierTypeGroup = tierTypeDimension.group();
-	            	console.log(d,i);
+	            	// console.log(d,i);
 	            	hotelPoints();
 	            	dc.redrawAll();
 	            })
