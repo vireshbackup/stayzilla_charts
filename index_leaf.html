@@ -131,7 +131,7 @@
 		function hotelPoints(){
 
 		    	var feature = g.selectAll("circle")
-								.data(tierTypeDimension.top(Infinity))
+								.data(tierTypeFilterDimension.top(Infinity))
 								.enter()
 								.append("circle")
 								.style("fill", function(d,i){
@@ -151,9 +151,9 @@
 										}
 								})
 								.attr("r", 2)
-								.on("mouseover", function(d){return tip.show(d);})
-								.on("mouseout", tip.hide)
-								.call(tip)
+								// .on("mouseover", function(d){return tip.show(d);})
+								// .on("mouseout", tip.hide)
+								// .call(tip)
 								
 				map.on("viewreset", update);
 				update();
@@ -175,8 +175,8 @@
 
     		tierTypeChart = dc.rowChart("#tierTypeRowChart");
     		tierTypeChart
-    			.width(100)
-    			.height(200)
+    			.width(400)
+    			.height(400)
     			.dimension(tierTypeDimension)
     			.group(tierTypeGroup)
 	            .colors(d3.scale.ordinal().domain(["tier1","tier2", "tier3"])
@@ -190,17 +190,25 @@
 	            .labelOffsetY(-3)
 	            .labelOffsetX(1)
 	            .on("filtered", function(d,i){
-	            	// tierTypeDimension.filterAll();
+	            	// tierTypeFilterDimension.filterAll();
+	            	console.log(d,i);
 	            	console.log("in");
-	            	tierTypeDimension.filter(i);
-	            	dc.redrawAll();
+	            	// tierTypeDimension.filterAll();
+	            	if(tierTypeFilterDimension.filter(i)){
 
+	            		tierTypeFilterDimension.filterAll();
+	            	}
+	            	else{
+	            		tierTypeFilterDimension.filter(i);
+	            	}
+	            	// tierTypeGroup = tierTypeDimension.group();
 	            	console.log(d,i);
 	            	hotelPoints();
-	            	tierTypeDimension.filterAll();
+	            	dc.redrawAll();
+	            	
 	            })
 
-        tierTypeChart.xAxis().ticks(2);
+        tierTypeChart.xAxis().ticks(4);
         dc.renderAll();
     	})
 
