@@ -5,64 +5,24 @@
 		<title>Plain Leaflet API</title>
 
 		<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-		<script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
-		<link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.css' rel='stylesheet' />
+		<script src='lib/mapbox.js'></script>
+		<link href='css/mapbox.css' rel='stylesheet' />
 
-		<link href="/css/dc.css" rel='stylesheet' />
-		
-		<script type="text/javascript"  src="/lib/d3.js"></script>
-		<script type="text/javascript" src="/lib/crossfilter.js"></script>
-		<script type="text/javascript" src="/lib/d3.tip.v0.6.3.js"></script>
-		<script type="text/javascript" src="/lib/dc.js"></script>
+		<link href="css/dc.css" rel='stylesheet' />
+		<link href="css/custom.css" rel='stylesheet' />
+		<link rel="stylesheet" href="css/leaflet.css" />
+		<script type="text/javascript"  src="lib/d3.js"></script>
+		<script type="text/javascript" src="lib/crossfilter.js"></script>
+		<script type="text/javascript" src="lib/d3.tip.v0.6.3.js"></script>
+		<script type="text/javascript" src="lib/dc.js"></script>
 
-		<style>
-		.leaflet-container {
-			    background: "red";
-			}
-		  body { margin:0; padding:0; }
-		  #map { position:absolute; top:0; bottom:0; width:60%; }
-		  .d3-tip {
-			  line-height: 1;
-			  font-weight: bold;
-			  padding: 12px;
-			  background: rgba(231, 155, 224, 0.5);
-			  color: rgba( 156, 0, 51, 1);
-			  border-radius: 2px;
-			  font-family: muliregular;
-			  line-height: 20px;
-			  opacity: 0.5;
-			}
-
-			.d3-tip:after {
-			  box-sizing: border-box;
-			  display: inline;
-			  font-size: 10px;
-			  width: 100%;
-			  line-height: 1;
-			  color: rgba(0, 0, 0, 0.8);
-			  content: "\25BC";
-			  position: absolute;
-			  text-align: center;
-			  opacity: 0.5;
-			}
-
-			.d3-tip.n:after {
-			  margin: -1px 0 0 0;
-			  top: 100%;
-			  left: 0;
-			  opacity: 0.5;
-			}
-			#tierTypeRowChart {
-				float:right;
-				margin: 200px;
-			}
-		</style>
 	</head>
 	<body>
 
 		<div id='map'></div>
 
 		<div id="tierTypeRowChart"></div>
+		<div id="amenityTypeChart"></div>
 
 		<script>
 
@@ -84,8 +44,8 @@
 		var tip = d3.tip()
           .attr("class", "d3-tip")
           .html(function(d){ 
-          		console.log(d);
-          		return "<br>hotel Id : "+ d.hid
+          		// console.log(d);
+          		return "<br> hotel Id :"+ d.hid
           				+"<br>ATM : "+parseInt(d.atm*1000)+"m"
           				+"<br>Bar : "+ parseInt(d.bar*1000)+"m"
           				+"<br>Bus Station : "+ parseInt(d.bus_station*1000)+"m"
@@ -96,14 +56,11 @@
           				+"<br>offices : "+ parseInt(d.offices*1000)+"m"
           				+"<br>spa/gyms : "+ parseInt(d.spa_gym*1000)+"m </br>"})
 
-
-
 		//Initialize svg layer 
     	map._initPathRoot()
 
 		var svg = d3.select("#map").select("svg"),
     	g = svg.append("g")
-    		// .classed({ "hidden": true, "hideLabels": true})
 
     	// Pick up SVG from map object
     	d3.csv("data/csv_sample.csv", function(csv){
@@ -114,10 +71,7 @@
     		})
 
     		csv.forEach(function(d){
-    			// console.log(d);
     			d.LatLng = new L.LatLng(d.lat, d.lng);
-    			// console.log(d);
-
     		})
 
     		total_hotels = csv.length;
@@ -125,12 +79,33 @@
     		var ndx = crossfilter(csv);
     		console.log(ndx);
      		var tierTypeDimension = ndx.dimension(function(d){ return d.tier;});
-
+     		// var amenityTypeChart = ndx.dimension( function(d){ return d.bar;});
     		var tierTypeGroup = tierTypeDimension.group();
 
-    		//For filtering based on tier based
+    		//For filtering based on tier
     		tierTypeFilterDimension = ndx.dimension(function(d){ return d.tier;})
 
+    		var barDistance = ndx.dimension(function(d){ 
+    				if(d.bar*1000 > 500)
+    					return "near(<500m)";
+    				else
+    					return "far(>500m)";
+    		})
+
+    		var barGroup = barDistance.group();
+
+    	var amenityPieChart = dc.pieChart("#amenityTypeChart");
+    	amenityPieChart
+    		.width(200)
+    		.height(200)
+    		.radius(90)
+    		.dimension(barDistance)
+    		.group(barGroup)
+    		.innerRadius(30)
+    		.colors(d3.scale.ordinal().domain(["near(<500m)","far(>500m)"])
+                                        .range(["green", "orange"]))
+    		.renderTitle(true)
+    		.title(function(d,i){ return "x % of hotels have bar nearby";})
 		function hotelPoints(){
 
 		    	var feature = g.selectAll("circle")
@@ -139,7 +114,6 @@
 						feature.enter()
 								.append("circle")
 								.style("fill", function(d,i){
-									// console.log(d, d.tier);
 										switch(d.tier){
 											case 1:
 												return "#7323DC";
@@ -154,10 +128,9 @@
 		                            			return "red";
 										}
 								})
-								.attr("r", 2)
+								.attr("r", 3)
 								
 						feature.style("fill", function(d,i){
-									// console.log(d, d.tier);
 										switch(d.tier){
 											case 1:
 												return "#7323DC";
@@ -172,7 +145,7 @@
 		                            			return "red";
 										}
 								})
-								.attr("r", 2)
+								.attr("r", 3)
 								.on("mouseover", function(d){return tip.show(d);})
 								.on("mouseout", tip.hide)
 								.call(tip)
@@ -207,7 +180,6 @@
 	            .colors(d3.scale.ordinal().domain(["tier1","tier2", "tier3"])
 	                                    .range(["#7323DC","#FF7B10", "#E5006C"]))
 	            .title(function(d) {
-	            	// console.log(d);
 	             return "tier "+d.key+" has "+d.value+" hotels"; })
 	            .elasticX(true)
 	            .margins({top: 0, right: 10, bottom: 35, left: 20})
@@ -217,8 +189,7 @@
 	            .on('postRender', function(chart) {
 						   tierTypeChart.svg().append('text').attr('class', 'y-label').attr('text-anchor', 'middle')
 						      .attr('x', -100).attr('y', 40).attr('dy', '-25').attr('transform', 'rotate(-90)')
-						      .text('tier');
-						   //different for x-axis label
+						      .text('tiers (hover on bars)');
 						})
 	            .on("filtered", function(d,i){
 	            	// tierTypeFilterDimension.filterAll();
@@ -232,7 +203,6 @@
 	            	}
 	            	else{
 	            		// tierTypeDimension.filterAll();
-	            		
 	            		tierTypeFilterDimension.filterAll();
 
 	            	}
@@ -242,8 +212,8 @@
 	            	dc.redrawAll();
 	            })
 
-        tierTypeChart.xAxis().ticks(4);
-        dc.renderAll();
+	        tierTypeChart.xAxis().ticks(4);
+	        dc.renderAll();
     	})
 
 		</script>
