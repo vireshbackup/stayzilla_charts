@@ -1,0 +1,58 @@
+
+		  body { margin:0; padding:0; }
+		  #map { 
+		  	    position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: 0;
+      height: 100%;
+      width: 50%;
+      float: right;
+      z-index: -1; }
+		  .d3-tip {
+			  line-height: 1;
+			  font-weight: bold;
+			  padding: 12px;
+			  background: rgba(231, 155, 224, 0.8);
+			  color: rgba( 156, 0, 51, 1);
+			  border-radius: 2px;
+			  font-family: muliregular;
+			  line-height: 20px;
+			  opacity: 0.8;
+			}
+
+			.d3-tip:after {
+			  box-sizing: border-box;
+			  display: inline;
+			  font-size: 10px;
+			  width: 100%;
+			  line-height: 1;
+			  color: rgba(0, 0, 0, 0.8);
+			  content: "\25BC";
+			  position: absolute;
+			  text-align: center;
+			  opacity: 0.8;
+			}
+
+			.d3-tip.n:after {
+			  margin: -1px 0 0 0;
+			  top: 100%;
+			  left: 0;
+			  opacity: 0.8;
+			}
+			#tierTypeRowChart {
+				float:right;
+				width:20%;
+			}
+			#amenityTypeChart {
+
+				float: right;
+				width: 20%;
+				/*margin: 100px;*/
+
+			/*	position:absolute; 
+				left:-500px;
+				 top:30px;*/
+				/*margin: 0px;*/
+			}
