@@ -1,5 +1,8 @@
 # stayzilla_charts
 
+4500 hotels data is loaded (csv_sample.csv)
+
+Upload csv file containg data for all hotels obtained from nodejs program.
 
 
 To Do:
