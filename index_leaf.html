@@ -119,12 +119,12 @@
     	amenityPieChart
     		.width(150)
     		.height(150)
-    		.radius(40)
+    		.radius(45)
     		.dimension(foodDistanceDimension)
     		.group(foodGroup)
-    		.innerRadius(10)
+    		.innerRadius(20)
     		.colors(d3.scale.ordinal().domain(["Restaurents(<1000m)","Restaurents(>1000m)"])
-                                        .range(["green", "orange"]))
+                                        .range(["#37FF00", "#29BD47"]))
     		.renderTitle(true)
     		.renderLabel(false)
     		.title(function(d,i){ return "x % of hotels having restaurents nearby";})
@@ -132,9 +132,8 @@
     		.on('filtered',function(d,i){
     			console.log(d,i);
     			hotelPoints();
-	            	dc.redrawAll();
+	            dc.redrawAll();
     		})
-
 
 		var atmDistanceDimension = ndx.dimension(function(d){ 
 				if(d.atm*1000 > 500)
@@ -151,12 +150,12 @@
     	atmamenityPieChart
     		.width(150)
     		.height(150)
-    		.radius(40)
+    		.radius(45)
     		.dimension(atmDistanceDimension)
     		.group(atmGroup)
-    		.innerRadius(10)
+    		.innerRadius(20)
     		.colors(d3.scale.ordinal().domain(["ATM(<500m)","ATM(>500m)"])
-                                        .range(["green", "orange"]))
+                                        .range(["#37FF00", "#29BD47"]))
     		.renderTitle(true)
     		.renderLabel(false)
     		.title(function(d,i){ return "x % of hotels having ATM nearby";})
