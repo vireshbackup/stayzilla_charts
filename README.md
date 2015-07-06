@@ -16,3 +16,7 @@ horizontal bar chart showing composition of low budget, medium budget, high budg
 Add text description and show numbers.
 
 A slider to change near and far distance of each amenity dynamically.(currently, 500m for ATM and 1000m for restaurents.)
+
+Use keen dashboards template.
+
+color points animating from bar to map
