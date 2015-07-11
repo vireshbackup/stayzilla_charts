@@ -31,6 +31,7 @@ map._initPathRoot()
 var svg = d3.select("#map").select("svg"),
 g = svg.append("g")
 
+
 // Pick up SVG from map object
 d3.csv("data/csv_sample.csv", function(csv){
 
@@ -63,8 +64,6 @@ var foodDistanceDimension = ndx.dimension(function(d){
 
 var foodGroup = foodDistanceDimension.group();
 
-// var testDimension = ndx.dimension(function(d){ return d.})
-
 var amenityPieChart = dc.pieChart("#amenityTypeChart");
 amenityPieChart
 	.width(150)
@@ -77,19 +76,13 @@ amenityPieChart
 							    .range(["#37FF00", "#29BD47"]))
 	.renderTitle(true)
 	.renderLabel(false)
-	.title(function(d,i){ return "x % of hotels having restaurents nearby";})
+	.title(function(d,i){ return "No. of hotels having "+d.key+ "are " + d.value;;})
 	.legend(dc.legend().x(20).y(0).itemHeight(13).gap(5) )
 	.on('filtered',function(d,i){
 		console.log(d,i);
 		hotelPoints();
-        dc.redrawAll();
+		dc.redrawAll();
 	})
-
-// var x = document.getElementById("points");
-// var atmDistanceDimension;
-// var atmGroup ;
-// x.addEventListener("change", function(){
-// 	console.log(document.getElementById("points").value);
 var	 atmDistanceDimension = ndx.dimension(function(d){ 
 		if(d.atm*1000 > 500)
 			return "ATM(<500m)";
@@ -97,13 +90,6 @@ var	 atmDistanceDimension = ndx.dimension(function(d){
 			return "ATM(>500m)";
 })
 var atmGroup = atmDistanceDimension.group();
-// })
-// console.log(x, x.value)
-
-
-// var atmGroup = atmDistanceDimension.group();
-
-// var testDimension = ndx.dimension(function(d){ return d.})
 
 var atmamenityPieChart = dc.pieChart("#ATMChart");
 atmamenityPieChart
@@ -117,16 +103,44 @@ atmamenityPieChart
                                 .range(["#37FF00", "#29BD47"]))
 	.renderTitle(true)
 	.renderLabel(false)
-	.title(function(d,i){ return "x % of hotels having ATM nearby";})
+	.title(function(d,i){console.log(d); return "No. of hotels having "+d.key+ "are " + d.value;})
 	.legend(dc.legend().x(20).y(0).itemHeight(13).gap(5))
 	.on('filtered',function(d,i){
 		console.log(d,i);
 		hotelPoints();
-        	dc.redrawAll();
+		dc.redrawAll();
+	})
+
+var	 TheatresDimension = ndx.dimension(function(d){ 
+		if(d.movie_theatre*1000 > 500)
+			return "Movies Theatre(<500m)";
+		else
+			return "Movie Theatre(>500m)";
+})
+var movieGroup = TheatresDimension.group();
+
+var moviePieChart = dc.pieChart("#MovieChart");
+moviePieChart
+	.width(150)
+	.height(150)
+	.radius(45)
+	.dimension(TheatresDimension)
+	.group(movieGroup)
+	.innerRadius(20)
+	.colors(d3.scale.ordinal().domain(["Movie Theatre(<500m)","Movie Theatre(>500m)"])
+                                .range(["#37FF00", "#29BD47"]))
+	.renderTitle(true)
+	.renderLabel(false)
+	.title(function(d,i){console.log(d); return "No. of theatres having "+d.key+ "are " + d.value;})
+	.legend(dc.legend().x(20).y(0).itemHeight(13).gap(5))
+	.on('filtered',function(d,i){
+		console.log(d,i);
+		hotelPoints();
+		dc.redrawAll();
 	})
 function hotelPoints(){
 
-    	var feature = g.selectAll("circle")
+		var feature = g.selectAll("circle")
 						.data(tierTypeFilterDimension.top(Infinity))
 
 				feature.enter()
@@ -148,8 +162,6 @@ function hotelPoints(){
 									return "red";
 								}
 						})
-						// .transition()
-						// .duration(2000)
 						.attr("r", 3)
 						.on("mouseover", function(d){return tip.show(d);})
 						.on("mouseout", tip.hide)
@@ -169,8 +181,6 @@ function hotelPoints(){
 				})
 		}
     }
-
-	// console.log(reduceDimension.top(Infinity));
 
 	tierTypeChart = dc.rowChart("#tierTypeRowChart");
 	tierTypeChart
