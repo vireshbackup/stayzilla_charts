@@ -56,10 +56,10 @@ var tierTypeGroup = tierTypeDimension.group();
 tierTypeFilterDimension = ndx.dimension(function(d){ return d.tier;})
 
 var foodDistanceDimension = ndx.dimension(function(d){ 
-		if(d.food*1000 > 1000)
-			return "Restaurents(<1000m)";
+		if(d.food*1000 > 500)
+			return "Restaurents(<500m)";
 		else
-			return "Restaurents(>1000m)";
+			return "Restaurents(>500m)";
 })
 
 var foodGroup = foodDistanceDimension.group();
@@ -72,7 +72,7 @@ amenityPieChart
 	.dimension(foodDistanceDimension)
 	.group(foodGroup)
 	.innerRadius(20)
-	.colors(d3.scale.ordinal().domain(["Restaurents(<1000m)","Restaurents(>1000m)"])
+	.colors(d3.scale.ordinal().domain(["Restaurents(<500m)","Restaurents(>500m)"])
 							    .range(["#37FF00", "#29BD47"]))
 	.renderTitle(true)
 	.renderLabel(false)

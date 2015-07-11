@@ -2,12 +2,10 @@
 
 4500 hotels data is loaded (csv_sample.csv)
 
-Upload csv file containg data for all hotels obtained from nodejs program.
-
 
 To Do:
 
-Donut char showing average of amenity distances, linked with hotel points on map. 
+~~Donut char showing average of amenity distances, linked with hotel points on map. ~~
 
 each cluster can be shown with different color on india map with a corresponding bar chart showing average of each amenity on hover.
 
@@ -17,6 +15,6 @@ Add text description and show numbers.
 
 A slider to change near and far distance of each amenity dynamically.(currently, 500m for ATM and 1000m for restaurents.)
 
-Use keen dashboards template.
+~~Use keen dashboards template.~~
 
 color points animating from bar to map
