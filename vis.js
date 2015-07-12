@@ -8,7 +8,7 @@ var mapboxTiles = L.tileLayer('https://{s}.tiles.mapbox.com/v4/mapbox.streets/{z
 
 var map = L.map('map')
     .addLayer(mapboxTiles)
-    .setView([21.0000 , 86.0000], 4);
+    .setView([21.0000 , 86.0000], 5);
 
 
 var tip = d3.tip()
@@ -145,27 +145,11 @@ moviePieChart
 	})
 
 
-
-
 function hotelPoints(){
 
 		var feature = g.selectAll("circle")
 						.data(tierTypeFilterDimension.top(Infinity))
-				feature
-
-						.transition()
-						.duration(2000)
-						.attr("r",3)
-						.attr("transform", 
-							function(d){
-								return "translate(" + 
-									map.latLngToLayerPoint(d.LatLng).x + "," + 
-									map.latLngToLayerPoint(d.LatLng).y + ")";
-						})
-
-				feature.enter()
-						.append("circle")
-												.style("fill", function(d,i){
+				feature.style("fill", function(d,i){
 								switch(d.tier){
 									case 1:
 										return "#7323DC";
@@ -180,6 +164,20 @@ function hotelPoints(){
 									return "red";
 								}
 						})
+
+						// .transition()
+						// .duration(2000)
+						.attr("r",3)
+						// .attr("transform", 
+						// 	function(d){
+						// 		return "translate(" + 
+						// 			map.latLngToLayerPoint(d.LatLng).x + "," + 
+						// 			map.latLngToLayerPoint(d.LatLng).y + ")";
+						// })
+
+				feature.enter()
+						.append("circle")
+
 
 				feature.style("fill", function(d,i){
 								switch(d.tier){
@@ -196,13 +194,15 @@ function hotelPoints(){
 									return "red";
 								}
 						})
+						.attr("r",3)
 						.on("mouseover", function(d){return tip.show(d);})
 						.on("mouseout", tip.hide)
+						.on("click", function(d){return tip.show(d);})
 						.call(tip)
 				feature.exit().remove();
 		
 		map.on("viewreset", update);
-		// update();
+		update();
 
 		function update() {
 			feature.attr("transform", 
