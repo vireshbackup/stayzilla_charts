@@ -8,7 +8,8 @@ var mapboxTiles = L.tileLayer('https://{s}.tiles.mapbox.com/v4/mapbox.streets/{z
 
 var map = L.map('map')
     .addLayer(mapboxTiles)
-    .setView([21.0000 , 78.0000], 5);
+    .setView([21.0000 , 86.0000], 4);
+
 
 var tip = d3.tip()
   .attr("class", "d3-tip")
@@ -31,7 +32,11 @@ map._initPathRoot()
 var svg = d3.select("#map").select("svg"),
 g = svg.append("g")
 
-
+d3.selectAll(".chart-wrapper")
+	.style("fill-opacity",0)
+	.transition()
+	.duration(4000)
+	.style("fill-opacity",1)
 // Pick up SVG from map object
 d3.csv("data/csv_sample.csv", function(csv){
 
@@ -103,10 +108,10 @@ atmamenityPieChart
                                 .range(["#37FF00", "#29BD47"]))
 	.renderTitle(true)
 	.renderLabel(false)
-	.title(function(d,i){console.log(d); return "No. of hotels having "+d.key+ "are " + d.value;})
+	.title(function(d,i){ return "No. of hotels having "+d.key+ "are " + d.value;})
 	.legend(dc.legend().x(20).y(0).itemHeight(13).gap(5))
 	.on('filtered',function(d,i){
-		console.log(d,i);
+		// console.log(d,i);
 		hotelPoints();
 		dc.redrawAll();
 	})
@@ -138,16 +143,29 @@ moviePieChart
 		hotelPoints();
 		dc.redrawAll();
 	})
+
+
+
+
 function hotelPoints(){
 
 		var feature = g.selectAll("circle")
 						.data(tierTypeFilterDimension.top(Infinity))
+				feature
+
+						.transition()
+						.duration(2000)
+						.attr("r",3)
+						.attr("transform", 
+							function(d){
+								return "translate(" + 
+									map.latLngToLayerPoint(d.LatLng).x + "," + 
+									map.latLngToLayerPoint(d.LatLng).y + ")";
+						})
 
 				feature.enter()
 						.append("circle")
-						
-				feature
-						.style("fill", function(d,i){
+												.style("fill", function(d,i){
 								switch(d.tier){
 									case 1:
 										return "#7323DC";
@@ -162,19 +180,34 @@ function hotelPoints(){
 									return "red";
 								}
 						})
-						.attr("r", 3)
+
+				feature.style("fill", function(d,i){
+								switch(d.tier){
+									case 1:
+										return "#7323DC";
+										break;
+									case 2:
+										return "#FF7B10";
+										break;
+									case 3:
+										return "#E5006C";
+										break;
+									default:
+									return "red";
+								}
+						})
 						.on("mouseover", function(d){return tip.show(d);})
 						.on("mouseout", tip.hide)
 						.call(tip)
 				feature.exit().remove();
 		
 		map.on("viewreset", update);
-		update();
+		// update();
 
 		function update() {
 			feature.attr("transform", 
 				function(d){
-					// console.log(d, map.latLngToLayerPoint(d.LatLng).x);
+					// console.log(map.latLngToLayerPoint(d.LatLng).x, map.latLngToLayerPoint(d.LatLng).y);
 					return "translate(" + 
 						map.latLngToLayerPoint(d.LatLng).x + "," + 
 						map.latLngToLayerPoint(d.LatLng).y + ")";
